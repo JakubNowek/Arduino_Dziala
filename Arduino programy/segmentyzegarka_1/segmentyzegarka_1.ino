@@ -25,8 +25,8 @@ const int dig_6 = 2;
 
  
 // Patterns for characters 0,1,2,3,4,5,6,7,8,9
-int datArray[16] = {~B11111100, ~B01100000, ~B11011010, ~B11110010, ~B01100110, ~B10110110, ~B10111110, ~B11100000, ~B11111110, ~B11110110};
- 
+int numArray[16] = {B11111100, B01100000, B11011010, B11110010, B01100110, B10110110, B10111110, B11100000, B11111110, B11110110};
+int digArray[6] = {7,6,5,4,3,2};
 void setup ()
 {
   // Setup pins as Outputs
@@ -50,60 +50,90 @@ void setup ()
 
 void print(int digit)
 {
-
-/*--------------------ONE DIGIT DISPLAY-----------------------*/
     // ST_CP LOW to keep LEDs from changing while reading serial data
     digitalWrite(latchPin, LOW);
     // Shift out the bits
     shiftOut(dataPin, clockPin, MSBFIRST, digit);
     // ST_CP HIGH change LEDs
     digitalWrite(latchPin, HIGH);
-    //delay(2000);
-/*------------------------------------------------------------*/
-//delay(TIME);
+}
 
+void printTime(int hours, int minutes, int seconds) // moze wypisywac czas albo date
+{
+  // #1
+  print(~numArray[hours/10]);
+  digitalWrite(digArray[0],HIGH); //zalaczenie wyswiwietlacza #1 (tu high/low na odwrot bo NPN zamiast PNP)
+  delay(TIME);
+  digitalWrite(digArray[0],LOW); //wylaczenie wyswietlacza #1
+  // #2
+  print(~(numArray[hours%10] | 0x01)); // dziesiata czesc godziny + separator
+  digitalWrite(dig_2,LOW); //zalaczenie wyswiwietlacza #2
+  delay(TIME);
+  digitalWrite(dig_2,HIGH); //wylaczenie wyswietlacza #2
+  // #3
+  print(~numArray[minutes/10]);
+  digitalWrite(dig_3,LOW);
+  delay(TIME);
+  digitalWrite(dig_3,HIGH);
+  //#4
+  print(~(numArray[minutes%10]| 0x01));// dziesiata czesc minuty + separator
+  digitalWrite(dig_4,LOW);
+  delay(TIME);
+  digitalWrite(dig_4,HIGH);
+  //#5
+  print(~numArray[seconds/10]);
+  digitalWrite(dig_5,LOW);
+  delay(TIME);
+  digitalWrite(dig_5,HIGH);
+  //#6
+  print(~numArray[seconds%10]);
+  digitalWrite(dig_6,LOW);
+  delay(TIME);
+  digitalWrite(dig_6,HIGH);
+  
 }
 
 
 void loop()
 {
-//dig1
-print(datArray[1]);
-digitalWrite(dig_1,HIGH); //zalaczenie wyswiwietlacza #1
-delay(TIME);
-digitalWrite(dig_1,LOW); //wylaczenie wyswietlacza #1
-
-
-//dig2 
-print(datArray[2]);
-digitalWrite(dig_2,LOW); //zalaczenie wyswiwietlacza #2
-delay(TIME);
-digitalWrite(dig_2,HIGH); //wylaczenie wyswietlacza #2
-
-
-//dig3
-print(datArray[3]);
-digitalWrite(dig_3,LOW);
-delay(TIME);
-digitalWrite(dig_3,HIGH);
-
-//dig4
-print(datArray[4]);
-digitalWrite(dig_4,LOW);
-delay(TIME);
-digitalWrite(dig_4,HIGH);
-
-//dig5
-print(datArray[5]);
-digitalWrite(dig_5,LOW);
-delay(TIME);
-digitalWrite(dig_5,HIGH);
-
-//dig6
-print(datArray[6]);
-digitalWrite(dig_6,LOW);
-delay(TIME);
-digitalWrite(dig_6,HIGH);
+  printTime(21,37,00);
+////dig1
+//print(~(numArray[1] /*| 0x01*/));
+//digitalWrite(digArray[0],HIGH); //zalaczenie wyswiwietlacza #1
+//delay(TIME);
+//digitalWrite(digArray[0],LOW); //wylaczenie wyswietlacza #1
+//
+//
+////dig2 
+//print(~numArray[2]);
+//digitalWrite(dig_2,LOW); //zalaczenie wyswiwietlacza #2
+//delay(TIME);
+//digitalWrite(dig_2,HIGH); //wylaczenie wyswietlacza #2
+//
+//
+////dig3
+//print(~numArray[3]);
+//digitalWrite(dig_3,LOW);
+//delay(TIME);
+//digitalWrite(dig_3,HIGH);
+//
+////dig4
+//print(~numArray[4]);
+//digitalWrite(dig_4,LOW);
+//delay(TIME);
+//digitalWrite(dig_4,HIGH);
+//
+////dig5
+//print(~numArray[5]);
+//digitalWrite(dig_5,LOW);
+//delay(TIME);
+//digitalWrite(dig_5,HIGH);
+//
+////dig6
+//print(~numArray[6]);
+//digitalWrite(dig_6,LOW);
+//delay(TIME);
+//digitalWrite(dig_6,HIGH);
 
 
 }
