@@ -6,6 +6,42 @@
   DroneBot Workshop 2020
   https://dronebotworkshop.com
 */
+//Biblioteki ESP
+#ifdef ESP8266
+#include <SoftwareSerial.h>
+#include <ESP8266WiFi.h>
+#else
+#include <WiFi.h>
+#endif
+#include <time.h>
+// #include <credentials.h>
+
+/*
+  The credentials.h file at least has to contain:
+  char mySSID[]="your SSID";
+  char myPASSWORD[]="your Password";
+  It has to be placed in the libraries folder
+  If you do not want a credentials file. delete the line: #include <credentials.h>
+*/
+
+#ifdef CREDENTIALS
+const char* ssid = mySSID;
+const char* password = myPASSWORD;
+#else
+const char* ssid = "UPC279E7A2";
+const char* password = "6PajheTberkw";
+#endif
+
+const char* NTP_SERVER = "ch.pool.ntp.org";
+const char* TZ_INFO    = "CET-1CEST-2,M3.5.0/02:00:00,M10.5.0/03:00:00";  // enter your time zone (https://remotemonitoringsystems.ca/time-zone-abbreviations.php)
+
+tm timeinfo;
+time_t now;
+long unsigned lastNTPtime;
+unsigned long lastEntryTime;
+
+//Zdefiniowanie polaczenia ESP8266 do Arduino UNO
+SoftwareSerial myEsp(8, 9); // RX, TX 
  
 // Define Connections to 74HC595
 #define TIME 3  //Zmienna okreslajaca czas na, ktorym ma nastapic przelaczenie wyswietlacza 
@@ -45,8 +81,36 @@ void setup ()
   digitalWrite(dig_4,HIGH);
   digitalWrite(dig_5,HIGH);
   digitalWrite(dig_6,HIGH);
-  
+
+  Serial.begin(9600);
+  //ESP setup
+  myEsp.begin(9600);
+  myEsp.println("\n\nNTP Time Test\n");
+  WiFi.begin(ssid, password);
+
+  int counter = 0;
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(200);
+    if (++counter > 100) ESP.restart();
+    myEsp.print ( "." );
+  }
+  myEsp.println("\n\nWiFi connected\n\n");
+
+  configTime(0, 0, NTP_SERVER);
+  // See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
+  setenv("TZ", TZ_INFO, 1);
+
+  if (getNTPtime(10)) {  // wait up to 10sec to sync
+  } else {
+    myEsp.println("Time not set");
+    ESP.restart();
+  }
+  //showTime(timeinfo);
+  lastNTPtime = time(&now);
+  lastEntryTime = millis();
 }
+
+
 
 void print(int digit)
 {
@@ -96,44 +160,27 @@ void printTime(int hours, int minutes, int seconds) // moze wypisywac czas albo 
 
 void loop()
 {
-  printTime(21,37,00);
-////dig1
-//print(~(numArray[1] /*| 0x01*/));
-//digitalWrite(digArray[0],HIGH); //zalaczenie wyswiwietlacza #1
-//delay(TIME);
-//digitalWrite(digArray[0],LOW); //wylaczenie wyswietlacza #1
-//
-//
-////dig2 
-//print(~numArray[2]);
-//digitalWrite(dig_2,LOW); //zalaczenie wyswiwietlacza #2
-//delay(TIME);
-//digitalWrite(dig_2,HIGH); //wylaczenie wyswietlacza #2
-//
-//
-////dig3
-//print(~numArray[3]);
-//digitalWrite(dig_3,LOW);
-//delay(TIME);
-//digitalWrite(dig_3,HIGH);
-//
-////dig4
-//print(~numArray[4]);
-//digitalWrite(dig_4,LOW);
-//delay(TIME);
-//digitalWrite(dig_4,HIGH);
-//
-////dig5
-//print(~numArray[5]);
-//digitalWrite(dig_5,LOW);
-//delay(TIME);
-//digitalWrite(dig_5,HIGH);
-//
-////dig6
-//print(~numArray[6]);
-//digitalWrite(dig_6,LOW);
-//delay(TIME);
-//digitalWrite(dig_6,HIGH);
+  getNTPtime(10);
+  printTime(timeinfo.tm_hour,timeinfo.tm_min,timeinfo.tm_sec);
+  delay(1000);
+}
 
+bool getNTPtime(int sec) {
 
+  {
+    uint32_t start = millis();
+    do {
+      time(&now);
+      localtime_r(&now, &timeinfo);
+      myEsp.print(".");
+      delay(10);
+    } while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
+    if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
+    myEsp.print("now ");  myEsp.println(now);
+    char time_output[30];
+    strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now));
+    myEsp.println(time_output);
+    myEsp.println();
+  }
+  return true;
 }

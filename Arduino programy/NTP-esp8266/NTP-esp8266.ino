@@ -56,10 +56,10 @@ tm timeinfo;
 time_t now;
 long unsigned lastNTPtime;
 unsigned long lastEntryTime;
-
+int timer;
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(/*115200*/9600);
   Serial.println("\n\nNTP Time Test\n");
   WiFi.begin(ssid, password);
 
@@ -87,10 +87,12 @@ void setup() {
 
 
 void loop() {
+  //timer = millis();
   // getTimeReducedTraffic(3600);
   getNTPtime(10);
   showTime(timeinfo);
   delay(1000);
+  //Serial.print(millis()-timer);
 }
 
 bool getNTPtime(int sec) {
@@ -100,15 +102,15 @@ bool getNTPtime(int sec) {
     do {
       time(&now);
       localtime_r(&now, &timeinfo);
-      Serial.print(".");
+      //Serial.print(".");
       delay(10);
     } while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
     if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
-    Serial.print("now ");  Serial.println(now);
+    //Serial.print("now ");  Serial.println(now);
     char time_output[30];
     strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now));
-    Serial.println(time_output);
-    Serial.println();
+    //Serial.println(time_output);
+    //Serial.println();
   }
   return true;
 }
@@ -134,17 +136,17 @@ bool getNTPtime(int sec) {
 */
 
 void showTime(tm localTime) {
+  Serial.print(localTime.tm_sec);
+  Serial.print(':');
+  Serial.print(localTime.tm_min);
+  Serial.print(':');
+  Serial.print(localTime.tm_hour);
+  Serial.print('-');
   Serial.print(localTime.tm_mday);
   Serial.print('/');
   Serial.print(localTime.tm_mon + 1);
   Serial.print('/');
   Serial.print(localTime.tm_year - 100);
-  Serial.print('-');
-  Serial.print(localTime.tm_hour);
-  Serial.print(':');
-  Serial.print(localTime.tm_min);
-  Serial.print(':');
-  Serial.print(localTime.tm_sec);
   Serial.print(" Day of Week ");
   if (localTime.tm_wday == 0)   Serial.println(7);
   else Serial.println(localTime.tm_wday);
