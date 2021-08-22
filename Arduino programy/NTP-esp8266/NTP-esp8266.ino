@@ -60,7 +60,7 @@ int timer;
 
 void setup() {
   Serial.begin(/*115200*/9600);
-  Serial.println("\n\nNTP Time Test\n");
+  Serial.println("\n\nNTP_Time_Test\n");
   WiFi.begin(ssid, password);
 
   int counter = 0;
@@ -69,7 +69,7 @@ void setup() {
     if (++counter > 100) ESP.restart();
     Serial.print ( "." );
   }
-  Serial.println("\n\nWiFi connected\n\n");
+  Serial.println("\n\nWiFi_connected\n\n");
 
   configTime(0, 0, NTP_SERVER);
   // See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
@@ -77,8 +77,8 @@ void setup() {
 
   if (getNTPtime(10)) {  // wait up to 10sec to sync
   } else {
-    Serial.println("Time not set");
-    ESP.restart();
+    Serial.println("Time_not_set");
+     ESP.restart();
   }
   showTime(timeinfo);
   lastNTPtime = time(&now);
@@ -136,18 +136,36 @@ bool getNTPtime(int sec) {
 */
 
 void showTime(tm localTime) {
+  Serial.print('s');
+  if(localTime.tm_sec/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_sec);
-  Serial.print(':');
+  //Serial.print(':');
+  Serial.print('m');
+  if(localTime.tm_min/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_min);
-  Serial.print(':');
+  //Serial.print(':');
+  Serial.print('h');
+  if(localTime.tm_hour/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_hour);
-  Serial.print('-');
+  //Serial.print('-');
+  Serial.print('D');
+  if(localTime.tm_mday/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_mday);
-  Serial.print('/');
+  //Serial.print('/');
+  Serial.print('M');
+  if((localTime.tm_mon+1)/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_mon + 1);
-  Serial.print('/');
+  //Serial.print('/');
+  Serial.print('Y');
+  if(localTime.tm_year/10 == 0)
+  Serial.print('0');
   Serial.print(localTime.tm_year - 100);
-  Serial.print(" Day of Week ");
+  Serial.print('R');
   if (localTime.tm_wday == 0)   Serial.println(7);
   else Serial.println(localTime.tm_wday);
 }
