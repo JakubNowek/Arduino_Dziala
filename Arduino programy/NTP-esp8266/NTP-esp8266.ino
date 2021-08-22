@@ -27,12 +27,15 @@
 
 #ifdef ESP8266
 #include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
 #else
 #include <WiFi.h>
 #endif
 #include <time.h>
 // #include <credentials.h>
-
+ESP8266WiFiMulti wifiMulti; //  MOD
+const uint32_t connectTimeoutMs = 6000; //MOD
+boolean connectioWasAlive = true;
 /*
   The credentials.h file at least has to contain:
   char mySSID[]="your SSID";
@@ -45,11 +48,11 @@
 const char* ssid = mySSID;
 const char* password = myPASSWORD;
 #else
-//const char* ssid = "UPC279E7A2";
-//const char* password = "6PajheTberkw";
+const char* ssid_1 = "UPC279E7A2";
+const char* password_1 = "6PajheTberkw";
 
-const char* ssid = "UPC7DDE84E";
-const char* password = "yTu3mP8xedrs";
+const char* ssid_2 = "UPC7DDE84E";
+const char* password_2 = "yTu3mP8xedrs";
 
 #endif
 
@@ -65,16 +68,25 @@ int timer;
 void setup() {
   Serial.begin(/*115200*/9600);
   Serial.println("\n\nNTP_Time_Test\n");
-  WiFi.begin(ssid, password);
-
+  //WiFi.begin(ssid, password); //MOD
+  WiFi.mode(WIFI_STA); //MOD
+  wifiMulti.addAP("Straż Miejska 47853","12345678" ); //MOD
+  wifiMulti.addAP(ssid_1,password_1 ); //MOD
+  wifiMulti.addAP(ssid_2,password_2 ); //MOD
   int counter = 0;
-  while (WiFi.status() != WL_CONNECTED) {
+//  while (WiFi.status() != WL_CONNECTED) { //MOD
+//    delay(200);
+//    if (++counter > 100) ESP.restart();
+//    Serial.print ( "." );
+//  }
+  while (wifiMulti.run(connectTimeoutMs) != WL_CONNECTED) { //MOD
+    boolean connectioWasAlive = false;
     delay(200);
     if (++counter > 100) ESP.restart();
     Serial.print ( "." );
   }
   Serial.println("\n\nWiFi_connected\n\n");
-
+  Serial.printf("connected to %s\n",WiFi.SSID().c_str());
   configTime(0, 0, NTP_SERVER);
   // See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for Timezone codes for your region
   setenv("TZ", TZ_INFO, 1);
