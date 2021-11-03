@@ -124,7 +124,7 @@ bool getNTPtime(int sec) {
     if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
     //Serial.print("now ");  Serial.println(now);
     char time_output[30];
-    strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now));
+    strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now+1)); //MOD (+1)
     //Serial.println(time_output);
     //Serial.println();
   }
